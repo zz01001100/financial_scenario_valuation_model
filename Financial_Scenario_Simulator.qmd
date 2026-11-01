@@ -1,0 +1,265 @@
+---
+title: "Financial Scenario Simulator"
+subtitle: "Corporate Finance: Forecasting, Valuation and Investment Decisions"
+author: "Independent Python Project · Student Assignment"
+date: "November 2026"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: false
+    code-copy: true
+    theme: cosmo
+    embed-resources: true
+jupyter: python3
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+# Project instructions
+
+**Context:** Corporate Finance / M&A Advisory. **Estimated workload:** 90–120 minutes (bonus not included). **Total:** 50 points + 10 bonus points.
+
+**Submission:** Submit a rendered Quarto HTML document and the original `.qmd` file. The document must render without errors after completing your code. Include all relevant functions and figures directly in the report. Answer conceptual questions in a few precise sentences, referring to your own results rather than general textbook descriptions. You may use `numpy`, `pandas`, and `matplotlib`; the optional application may use `streamlit`.
+
+**Important:** This is a *student exercise*, not a completed valuation. The code cells below provide inputs and incomplete scaffolding, not solutions. Replace the `TODO` sections as you work through the project.
+
+# Business case
+
+You are a junior analyst at a Swiss Corporate Finance advisory firm. A client is considering acquiring a privately held manufacturing company. Your task is to build a reusable financial forecasting and valuation tool, assess the acquisition under alternative economic scenarios, and communicate a defensible recommendation.
+
+The seller is asking for an **enterprise value of CHF 150 million**. Determine whether this price is justified by the target's projected free cash flows.
+
+## Financial assumptions
+
+All monetary amounts are in **CHF millions**. Assume year-end cash flows, a five-year explicit forecast for **2027–2031**, constant annual depreciation, capital expenditure and changes in net working capital, and no acquisitions or disposals. The EBITDA margin is constant within each scenario.
+
+| Input | Value |
+|:--|--:|
+| Revenue (2026) | 100 |
+| Revenue growth | 5% per year |
+| EBITDA margin | 20% |
+| Depreciation and amortisation | 4 per year |
+| Capital expenditure (CapEx) | 6 per year |
+| Change in net working capital (ΔNWC) | 1 per year |
+| Corporate tax rate | 20% |
+| Weighted average cost of capital (WACC) | 9% |
+| Terminal growth | 2% |
+| Net debt | 15 |
+| Proposed acquisition enterprise value | 150 |
+
+```{python}
+#| label: setup
+#| eval: false
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+revenue_2026 = 100
+revenue_growth = 0.05
+ebitda_margin = 0.20
+depreciation = 4
+capex = 6
+delta_nwc = 1
+tax_rate = 0.20
+wacc = 0.09
+terminal_growth = 0.02
+net_debt = 15
+asking_ev = 150
+
+years = np.arange(2027, 2032)
+```
+
+# Part 1: Financial forecasting (12 points)
+
+Financial forecasts translate operating assumptions into the cash flows that support a valuation. Begin with the company's revenue, then calculate profitability and free cash flow to the firm (FCFF).
+
+## Revenue and operating profit (6 points)
+
+1. Write a reusable function `forecast_financials()` that accepts the operating assumptions as arguments and returns a `pandas.DataFrame` indexed or labelled by year. **3 pts**
+2. Forecast revenue for each year from 2027 to 2031 using compound annual growth. Calculate EBITDA and EBIT. **2 pts**
+3. Calculate net operating profit after tax (NOPAT). **1 pt**
+
+$$Revenue_t = Revenue_{t-1}(1+g)$$
+
+$$EBITDA_t = Revenue_t \times EBITDA\ Margin$$
+
+$$EBIT_t = EBITDA_t - D\&A_t$$
+
+$$NOPAT_t = EBIT_t(1-T)$$
+
+```{python}
+#| label: forecast
+#| eval: false
+def forecast_financials(revenue_2026, revenue_growth, ebitda_margin,
+                        depreciation, capex, delta_nwc, tax_rate):
+    # TODO: Calculate annual revenue, EBITDA, EBIT, NOPAT and FCFF.
+    # TODO: Return a DataFrame with one row per forecast year.
+    pass
+
+# TODO: Call the function and print the forecast.
+```
+
+## Free cash flow (4 points)
+
+Calculate FCFF for each forecast year. Add an `FCFF` column to your DataFrame and explain in two sentences why depreciation is added back and capital expenditure is deducted. **4 pts**
+
+$$FCFF_t = EBIT_t(1-T)+D\&A_t-CapEx_t-\Delta NWC_t$$
+
+## Validation (2 points)
+
+Check that your forecast contains exactly five years, that revenue increases under positive growth, and that the accounting relationships hold. Explain any additional checks you consider useful. **2 pts**
+
+**Your answer:**
+
+*Write your interpretation here.*
+
+# Part 2: Discounted cash flow valuation (12 points)
+
+A DCF valuation estimates the enterprise value by discounting expected future cash flows at the WACC. A terminal value captures cash flows beyond the explicit forecast period.
+
+## Present value of forecast cash flows (4 points)
+
+1. Write a function `calculate_dcf(forecast, wacc, terminal_growth, net_debt)` that returns a dictionary of valuation outputs. **2 pts**
+2. Discount each forecast FCFF using the correct period index $t=1,\ldots,5$. **2 pts**
+
+$$PV(FCFF_t)=\frac{FCFF_t}{(1+WACC)^t}$$
+
+## Terminal value and enterprise value (5 points)
+
+Calculate the terminal value **at the end of 2031**, discount it to the valuation date, and compute the enterprise value. Assume the first post-forecast cash flow is $FCFF_5(1+g)$ and that $WACC>g$. **5 pts**
+
+$$TV_5=\frac{FCFF_5(1+g)}{WACC-g}$$
+
+$$EV=\sum_{t=1}^{5}\frac{FCFF_t}{(1+WACC)^t}+\frac{TV_5}{(1+WACC)^5}$$
+
+$$Equity\ Value=EV-Net\ Debt$$
+
+```{python}
+#| label: dcf
+#| eval: false
+def calculate_dcf(forecast, wacc, terminal_growth, net_debt):
+    # TODO: Discount forecast FCFF.
+    # TODO: Calculate terminal value and its present value.
+    # TODO: Calculate enterprise and equity values.
+    # TODO: Return a dictionary with the main outputs.
+    pass
+```
+
+## Interpretation (3 points)
+
+Explain (i) why the terminal value must be discounted, (ii) why net debt is subtracted from enterprise value, and (iii) what happens if the terminal growth rate approaches the WACC. **3 pts**
+
+**Your answer:**
+
+*Write your interpretation here.*
+
+# Part 3: Scenario analysis (10 points)
+
+Business conditions may deviate substantially from the base case. Recalculate the entire forecast and valuation for three internally consistent scenarios.
+
+| Parameter | Bear | Base | Bull |
+|:--|--:|--:|--:|
+| Annual revenue growth | 1% | 5% | 9% |
+| EBITDA margin | 15% | 20% | 25% |
+| WACC | 11% | 9% | 8% |
+| Terminal growth | 1% | 2% | 3% |
+
+## Scenario calculations (5 points)
+
+Use your functions from Parts 1 and 2 to calculate enterprise value and equity value for each scenario. Store the results in a DataFrame with one row per scenario. Do not duplicate the financial formulas for each case. **5 pts**
+
+```{python}
+#| label: scenarios
+#| eval: false
+scenarios = {
+    "Bear": {"revenue_growth": 0.01, "ebitda_margin": 0.15,
+             "wacc": 0.11, "terminal_growth": 0.01},
+    "Base": {"revenue_growth": 0.05, "ebitda_margin": 0.20,
+             "wacc": 0.09, "terminal_growth": 0.02},
+    "Bull": {"revenue_growth": 0.09, "ebitda_margin": 0.25,
+             "wacc": 0.08, "terminal_growth": 0.03}
+}
+
+# TODO: Loop through the scenarios and collect valuation results.
+```
+
+## Visualisation and discussion (5 points)
+
+Produce a labelled bar chart of enterprise value by scenario with a horizontal reference line at **CHF 150 million**. Indicate units and make the figure readable in the rendered report. **3 pts**
+
+In three to five sentences, discuss which scenarios imply an attractive acquisition price and why the values differ. A DCF enterprise value above the asking enterprise value suggests valuation headroom, not a guaranteed investment profit. **2 pts**
+
+**Your answer:**
+
+*Write your interpretation here.*
+
+# Part 4: Sensitivity analysis (10 points)
+
+Scenario analysis varies multiple assumptions together. Sensitivity analysis isolates the impact of selected valuation inputs while holding the operating forecast constant.
+
+## WACC and terminal growth matrix (6 points)
+
+Using the **base-case FCFF forecast**, calculate enterprise value for every combination of the following parameters. **6 pts**
+
+- WACC: 7%, 8%, 9%, 10%, 11%.
+- Terminal growth: 1%, 1.5%, 2%, 2.5%, 3%.
+
+Return a 5 × 5 DataFrame, with WACC as rows and terminal growth as columns. Confirm that the 9% WACC / 2% growth cell agrees with your base-case DCF.
+
+```{python}
+#| label: sensitivity
+#| eval: false
+wacc_values = [0.07, 0.08, 0.09, 0.10, 0.11]
+growth_values = [0.01, 0.015, 0.02, 0.025, 0.03]
+
+# TODO: Calculate a valuation matrix using the base-case forecast.
+# TODO: Check the central cell against the base-case DCF.
+```
+
+## Heatmap and interpretation (4 points)
+
+Visualise the matrix as a heatmap with clearly labelled axes and values in CHF millions. **2 pts**
+
+Explain whether the valuation is more sensitive to WACC or terminal growth *over the tested ranges*. Identify a combination for which the acquisition appears unattractive at CHF 150 million. **2 pts**
+
+**Your answer:**
+
+*Write your interpretation here.*
+
+# Part 5: Investment recommendation (6 points)
+
+Write an **investment recommendation of no more than 200 words** addressed to the client's investment committee. Base your conclusions on the model outputs. Address all five questions below.
+
+1. What is the estimated base-case enterprise value?
+2. Is the seller's CHF 150 million asking enterprise value justified?
+3. What are the principal downside risks?
+4. Which assumptions would you investigate during financial due diligence?
+5. Would you recommend proceeding with negotiations? Under what conditions?
+
+**Investment recommendation:**
+
+*Write your recommendation here.*
+
+# Optional bonus: Interactive simulator (10 bonus points)
+
+Develop a small interactive interface using Streamlit or Matplotlib sliders. Allow the user to change annual revenue growth, EBITDA margin, WACC and terminal growth, and update the forecast, valuation and visualisation automatically. Document how to launch the application and explain one financial insight revealed by changing the assumptions.
+
+Do not embed a Streamlit server inside the Quarto report. Link to your separate application script in your repository and include a screenshot in the completed report if desired.
+
+# Final deliverables and checklist
+
+- [ ] Reusable forecasting function and five-year forecast DataFrame.
+- [ ] DCF function, enterprise value and equity value.
+- [ ] Bear, base and bull scenario comparison with chart.
+- [ ] WACC × terminal growth sensitivity matrix and heatmap.
+- [ ] Concise investment committee recommendation.
+- [ ] Fully rendered Quarto HTML and original `.qmd` source.
+- [ ] GitHub README with assumptions, methodology, instructions and findings.
+
+**Suggested repository:** `financial-scenario-simulator`.
+
+**Reproducibility note:** Code chunks are intentionally marked `eval: false` in this starter assignment so that the unsolved template renders without errors. As you complete each part, replace placeholders with working code and change the relevant chunk to `eval: true`. The final submission should execute all analytical code and display its figures in the main text.
