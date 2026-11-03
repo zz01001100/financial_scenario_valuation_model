@@ -22,7 +22,7 @@ asking_ev = 150
 
 years = np.arange(2027, 2032)
 
-# Part one: Financial forecasting
+# Part one: Financial forecasting ----------------------------------------
 
 def forecast_financials(revenue_2026, revenue_growth, ebitda_margin,
                         depreciation, capex, delta_nwc, tax_rate):
@@ -65,7 +65,8 @@ def forecast_financials(revenue_2026, revenue_growth, ebitda_margin,
 forecast = forecast_financials(revenue_2026, revenue_growth, ebitda_margin, depreciation, capex, delta_nwc, tax_rate)
 print(forecast)
 
-# Part two: Discounted cash flow valuation
+# Part two: Discounted cash flow valuation ----------------------------------------
+
 def calculate_dcf(forecast, wacc, terminal_growth, net_debt):
     
     fcff_present_value_list = []
@@ -90,3 +91,38 @@ def calculate_dcf(forecast, wacc, terminal_growth, net_debt):
 
 valuation_outputs = calculate_dcf(forecast, wacc, terminal_growth, net_debt)
 print(valuation_outputs)
+
+# Part three: Scenario analysis ----------------------------------------
+
+scenarios = {
+    "Bear": {"revenue_growth": 0.01, "ebitda_margin": 0.15,
+             "wacc": 0.11, "terminal_growth": 0.01},
+    "Base": {"revenue_growth": 0.05, "ebitda_margin": 0.20,
+             "wacc": 0.09, "terminal_growth": 0.02},
+    "Bull": {"revenue_growth": 0.09, "ebitda_margin": 0.25,
+             "wacc": 0.08, "terminal_growth": 0.03}
+}
+
+revenue_growth = scenarios['Bear']['revenue_growth']
+ebitda_margin = scenarios['Bear']['ebitda_margin']
+
+scenario_names = ['Bear', 'Base', 'Bull']
+
+scenario_results = []
+for i in scenario_names:
+    forecast = forecast_financials(
+        revenue_2026, 
+        scenarios[i]['revenue_growth'], 
+        scenarios[i]['ebitda_margin'], 
+        depreciation, capex, delta_nwc, tax_rate
+        )
+    results = calculate_dcf(
+        forecast,
+        scenarios[i]['wacc'],
+        scenarios[i]['terminal_growth'],
+        net_debt
+    )
+    scenario_results.append(results)
+
+valuation_outputs_df = pd.DataFrame(scenario_results)
+print(valuation_outputs_df)
